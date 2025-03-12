@@ -62,4 +62,3 @@ function [q,qd,qdd, qddd] = linearParabolicBlendTrajectory(t0, tf, q0, qf, tb, q
     qdd = [qdd, 2*abf(3)*ones(size(t33))];
     qddd = zeros(1, N);
     end
-    
