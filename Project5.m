@@ -162,7 +162,7 @@ end
 %     % disp('Animation saved as joint_space_trajectory_animation.mp4');
 
 % % End of Animation
-%%
+%% Calculation with Gravity
 
 for n = 1:length(t1q)
     t1 = t1q(n);
@@ -172,175 +172,201 @@ for n = 1:length(t1q)
     dt2 = t1qd(n);
     ddt2 = t1qdd(n);
 
-    TauNew = calcJointTorque(L1, t1, dt1, ddt1, L2, t2, dt2, ddt2);
+    [Tau, tauInertial, tauCent, tauCor, tauGrav] = calcJointTorque(L1, t1, dt1, ddt1, L2, t2, dt2, ddt2, 9.81);
 
     % Store the joint torques in TauResults
-    TauResultsnew(n, :) = TauNew';
+    TauResults(n, :) = [Tau(1), Tau(2), tauInertial(1), tauInertial(2), tauCent(1), tauCent(2), tauCor(1), tauCor(2), tauGrav(1), tauGrav(2)];
+end
+
+%% Calculation without Gravity
+for n = 1:length(t1q)
+    t1 = t1q(n);
+    dt1 = t1qd(n);
+    ddt1 = t1qdd(n);
+    t2 = t2q(n);
+    dt2 = t1qd(n);
+    ddt2 = t1qdd(n);
+
+    [Tau, tauInertial, tauCent, tauCor, tauGrav] = calcJointTorque(L1, t1, dt1, ddt1, L2, t2, dt2, ddt2, 0);
+
+    % Store the joint torques in TauResults
+    TauResultsNoGrav(n, :) = [Tau(1), Tau(2), tauInertial(1), tauInertial(2), tauCent(1), tauCent(2), tauCor(1), tauCor(2), tauGrav(1), tauGrav(2)];
 end
 
 %% Graph
 % Define time vector (10 points over 4 seconds)
 t = linspace(0, 4, 10);
 
-% Theta 1 Graphs
+% % Theta 1 Graphs (with Gravity)
+%     figure;
+%     % Create a 3x1 subplot layout
+%     subplot(3, 1, 1);
+%     plot(t, t1q, '-o'); % Plot data1 in the first subplot
+%     xlabel('Time (s)');
+%     ylabel('Angle (rad)');
+
+%     subplot(3, 1, 2);
+%     plot(t, t1qd, '-s'); % Plot data2 in the second subplot
+%     xlabel('Time (s)');
+%     ylabel('Velocity (rad/s)');
+
+%     subplot(3, 1, 3);
+%     plot(t, t1qdd, '-^'); % Plot data3 in the third subplot
+%     xlabel('Time (s)');
+%     ylabel('Accel. (rad/s^2)');
+
+%     % Adjust subplot spacing
+%     sgtitle('Joint Angles'); % Overall title for all subplots
+% % End Theta 1 Graphs
+
+% Theta Graphs (with Gravity)
     figure;
     % Create a 3x1 subplot layout
     subplot(3, 1, 1);
-    plot(t, t1q, '-o'); % Plot data1 in the first subplot
-    xlabel('Time (s)');
-    ylabel('Angle (rad)');
-
-    subplot(3, 1, 2);
-    plot(t, t1qd, '-s'); % Plot data2 in the second subplot
-    xlabel('Time (s)');
-    ylabel('Velocity (rad/s)');
-
-    subplot(3, 1, 3);
-    plot(t, t1qdd, '-^'); % Plot data3 in the third subplot
-    xlabel('Time (s)');
-    ylabel('Accel. (rad/s^2)');
-
-    % Adjust subplot spacing
-    sgtitle('Joint Angles'); % Overall title for all subplots
-% End Theta 1 Graphs
-
-% Theta 2 Graphs
-    figure;
-    % Create a 3x1 subplot layout
-    subplot(3, 1, 1);
-    plot(t, t2q, '-o'); % Plot data1 in the first subplot
-    xlabel('Time (s)');
-    ylabel('Angle (rad)');
-
-    subplot(3, 1, 2);
-    plot(t, t2qd, '-s'); % Plot data2 in the second subplot
-    xlabel('Time (s)');
-    ylabel('Velocity (rad/s)');
-
-    subplot(3, 1, 3);
-    plot(t, t2qdd, '-^'); % Plot data3 in the third subplot
-    xlabel('Time (s)');
-    ylabel('Accel. (rad/s^2)');
-
-    % Adjust subplot spacing
-    sgtitle('Joint Angles'); % Overall title for all subplots
-% End of Theta 2 Graphs
-
-% Torque Graphs
-    figure;
-    % Create a 3x1 subplot layout
-    % subplot(3, 1, 1);
-    plot(t, TauResultsnew(:,1), '-b'); % Plot data1 in the first subplot
+    plot(t, t1q, 'b', 'LineWidth', 2, 'DisplayName', 'theta1'); % Plot data1 in the first subplot
     hold on;
-    plot(t, TauResultsnew(:,2), '-r'); % Plot data1 in the first subplot
+    plot(t, t2q, 'r', 'LineWidth', 2, 'DisplayName', 'theta2'); % Plot data1 in the first subplot
     xlabel('Time (s)');
-    ylabel('Torque(Nm)');
-    title('Torques'); % Overall title for all subplots
+    ylabel('Angle (rad)');
+    legend('show', 'Location', 'best');
+    title('Joint Angles');
+
+
+    subplot(3, 1, 2);
+    plot(t, t1qd, 'b', 'LineWidth', 2, 'DisplayName', 'omega1'); % Plot data2 in the second subplot
+    hold on;
+    plot(t, t2qd, 'r', 'LineWidth', 2, 'DisplayName', 'omega2'); % Plot data2 in the second subplot
+    xlabel('Time (s)');
+    ylabel('Velocity (rad/s)');
+    legend('show', 'Location', 'best');
+    title('Joint Velocity');
+
+
+    subplot(3, 1, 3);
+    plot(t, t2qdd, 'b', 'LineWidth', 2, 'DisplayName', 'sigma1'); % Plot data3 in the third subplot
+    hold on;
+    plot(t, t2qdd, 'r', 'LineWidth', 2, 'DisplayName', 'sigma2'); % Plot data3 in the third subplot
+    xlabel('Time (s)');
+    ylabel('Accel. (rad/s^2)');
+    legend('show', 'Location', 'best');
+    title('Joint Acceleration');
+
+
+% End of Theta Graphs
+
+% Torque Graphs (with Gravity)
+    figure;
+
+    % Create a 2x1 subplot layout
+    subplot(2, 1, 1);
+    plot(t, TauResults(:,3), '-b', 'LineWidth', 2,'DisplayName', 'Inertial');
+    hold on;
+    plot(t, TauResults(:,5), '-r', 'LineWidth', 2,'DisplayName', 'Centrifugal');
+    plot(t, TauResults(:,7), '-y', 'LineWidth', 2,'DisplayName', 'Corolis');
+    plot(t, TauResults(:,9), '-m', 'LineWidth', 2,'DisplayName', 'Gravity');
+    plot(t, TauResults(:,1), '-g', 'LineWidth', 2,'DisplayName', 'Total');
+
+    xlabel('Time (s)');
+    ylabel('Torque (Nm)');
+    title('Joint 1 Torques (with Gravity)');
     grid on;
-    hold off;
+    legend('show', 'Location', 'best');
+
+
+    subplot(2, 1, 2);
+    plot(t, TauResults(:,4), '-b', 'LineWidth', 2,'DisplayName', 'Inertial');
+    hold on;
+    plot(t, TauResults(:,6), '-r', 'LineWidth', 2,'DisplayName', 'Centrifugal');
+    plot(t, TauResults(:,8), '-y', 'LineWidth', 2,'DisplayName', 'Corolis');
+    plot(t, TauResults(:,10), 'm', 'LineWidth', 2,'DisplayName', 'Gravity');
+    plot(t, TauResults(:,2), '-g', 'LineWidth', 2,'DisplayName', 'Total');
+    xlabel('Time (s)');
+    ylabel('Torque (Nm)');
+    title('Joint 2 Torques (with Gravity)');
+    grid on;
+    legend('show');
+
 % End of Torque Graphs
 
-
-tauInertial = [m2*l2^2 + 2*m2*l1*l2*cos(t2) + (l1^2)*(m1+m2), m2*l2^2 + m2*l1*l2*cos(t2); 
-               m2*l2^2 + m2*l1*l2*cos(t2), m2*l2^2] * [ddt1; ddt2];
-
-tauCent = [0, -m2*l1*l2*sin(t2); m2*l1*l2*sin(t2), 0] * [dt1^2; dt2^2];
-
-tauCor = [-2*m2*l1*l2*sin(t2); 0] * [dt1 * dt2];
-
-tauGrav = [m2*l2*g*cos(t1+t2) + (m1+m2)*l1*g*cos(t1); m2*l2*g*cos(t1+t2)];
-
-
-% %% Testing
-% % Given variables and constants
-% g = 9.81; % acceleration due to gravity (m/s^2)
-
-% % External forces or torques (replace with your actual external values)
-% external_force = 10; % Example external force (N)
-% external_torque = 10; % Example external torque (N*m)
-
-% % Joint torque equation components
-% Tau_inertial = 0.0833 * ddt1 * l1^2 * m1 + ddt1 * l1^2 * m2 ...
-%              + 0.3333 * ddt1 * l2^2 * m2 + 0.3333 * ddt2 * l2^2 * m2 ...
-%              + 0.2500 * ddt1 * l1 * l2 * m1;
-
-% Tau_centrifugal = -0.5000 * dt2^2 * l1 * l2 * m2 * sin(t2);
-
-% Tau_coriolis = ddt1 * l1 * l2 * m2 * cos(t2) + 0.5000 * ddt2 * l1 * l2 * m2 * cos(t2) ...
-%              - dt1 * dt2 * l1 * l2 * m2 * sin(t2);
-
-% Tau_gravitational = 0.5000 * g * l2 * m2 * cos(t1 + t2) + g * l1 * m2 * cos(t1) ...
-%                   + 0.5000 * g * l2 * m1 * cos(t1);
-
-% % External torque (if acting on the system)
-% Tau_external = external_torque;
-
-% % Total joint torque including external forces or torques
-% Tau_total = Tau_inertial + Tau_centrifugal + Tau_coriolis + Tau_gravitational + Tau_external;
-
-% % Display results
-% disp(['Inertial torque: ', num2str(Tau_inertial)]);
-% disp(['Centrifugal torque: ', num2str(Tau_centrifugal)]);
-% disp(['Coriolis torque: ', num2str(Tau_coriolis)]);
-% disp(['Gravitational torque: ', num2str(Tau_gravitational)]);
-% disp(['External torque: ', num2str(Tau_external)]);
-% disp(['Total joint torque: ', num2str(Tau_total)]);
+% Theta Graphs (WITHOUT Gravity)
+    figure;
+    % Create a 3x1 subplot layout
+    subplot(3, 1, 1);
+    plot(t, t1q, 'b', 'LineWidth', 2, 'DisplayName', 'theta1'); % Plot data1 in the first subplot
+    hold on;
+    plot(t, t2q, 'r', 'LineWidth', 2, 'DisplayName', 'theta2'); % Plot data1 in the first subplot
+    xlabel('Time (s)');
+    ylabel('Angle (rad)');
+    legend('show', 'Location', 'best');
+    title('Joint Angles');
 
 
+    subplot(3, 1, 2);
+    plot(t, t1qd, 'b', 'LineWidth', 2, 'DisplayName', 'omega1'); % Plot data2 in the second subplot
+    hold on;
+    plot(t, t2qd, 'r', 'LineWidth', 2, 'DisplayName', 'omega2'); % Plot data2 in the second subplot
+    xlabel('Time (s)');
+    ylabel('Velocity (rad/s)');
+    legend('show', 'Location', 'best');
+    title('Joint Velocity');
 
 
+    subplot(3, 1, 3);
+    plot(t, t2qdd, 'b', 'LineWidth', 2, 'DisplayName', 'sigma1'); % Plot data3 in the third subplot
+    hold on;
+    plot(t, t2qdd, 'r', 'LineWidth', 2, 'DisplayName', 'sigma2'); % Plot data3 in the third subplot
+    xlabel('Time (s)');
+    ylabel('Accel. (rad/s^2)');
+    legend('show', 'Location', 'best');
+    title('Joint Acceleration');
 
-% % Define symbolic variables
-% syms x y;
+% End of Theta Graphs
 
-% % Original expression
-% expr = x^2 + 3*x*y + 2*y^2 - x*y + 4*x - 7*y;
+% Torque Graphs (WITHOUT Gravity)
+    figure;
 
-% % Collect terms with respect to x
-% collected_expr = collect(expr, x);
+    % Create a 2x1 subplot layout
+    subplot(2, 1, 1);
+    plot(t, TauResultsNoGrav(:,3), '-b', 'LineWidth', 2,'DisplayName', 'Inertial');
+    hold on;
+    plot(t, TauResultsNoGrav(:,5), '-r', 'LineWidth', 2,'DisplayName', 'Centrifugal');
+    plot(t, TauResultsNoGrav(:,7), '-y', 'LineWidth', 2,'DisplayName', 'Corolis');
+    plot(t, TauResultsNoGrav(:,9), '-m', 'LineWidth', 2,'DisplayName', 'Gravity');
+    plot(t, TauResultsNoGrav(:,1), '-g', 'LineWidth', 2,'DisplayName', 'Total');
+    xlabel('Time (s)');
+    ylabel('Torque (Nm)');
+    title('Joint 1 Torques (without Gravity)');
+    grid on;
+    legend('show', 'Location', 'best');
 
-% % Substitute specific values for x and y
-% x_val = 2;
-% y_val = 3;
-% result = subs(collected_expr, [x, y], [x_val, y_val]);
+    subplot(2, 1, 2);
+    plot(t, TauResultsNoGrav(:,4), '-b', 'LineWidth', 2,'DisplayName', 'Inertial');
+    hold on;
+    plot(t, TauResultsNoGrav(:,6), '-r', 'LineWidth', 2,'DisplayName', 'Centrifugal');
+    plot(t, TauResultsNoGrav(:,8), '-y', 'LineWidth', 2,'DisplayName', 'Corolis');
+    plot(t, TauResultsNoGrav(:,10), 'm', 'LineWidth', 2,'DisplayName', 'Gravity');
+    plot(t, TauResultsNoGrav(:,2), '-g', 'LineWidth', 2,'DisplayName', 'Total');
+    xlabel('Time (s)');
+    ylabel('Torque (Nm)');
+    title('Joint 2 Torques (without Gravity)');
+    grid on;
+    legend('show');
 
-% disp(['Result for x = ', num2str(x_val), ', y = ', num2str(y_val), ':']);
-% disp(result);
+% End of Torque Graphs
 
+% Torque Comparison
+    figure;
 
-% dt1 dt1sq dt2 dt2sq ddt1 ddt2 g
-
-% Substitute another variable for squared terms
-tau1_subs = subs(tau1, dt1^2, dt1sq);
-tau1_subs = subs(tau1_subs, dt2^2, dt2sq);
-
-% Substitute another variable for squared terms
-tau2_subs = subs(tau2, dt1^2, dt1sq);
-tau2_subs = subs(tau2_subs, dt2^2, dt2sq);
-
-% Collect terms for each torque
-% inertial
-collect_tau1_inertial = collect(tau1_subs, ddt1);
-collect_tau2_inertial = collect(tau2_subs, ddt2);
-% centrifugal
-collect_tau1_centrifugal = collect(tau1_subs, dt1sq);
-collect_tau2_centrifugal = collect(tau2_subs, dt2sq);
-% curiolis
-collect_tau1_curiolis = collect(tau1_subs, dt1);
-collect_tau2_curiolis = collect(tau2_subs, dt2);
-% gravitational
-collect_tau1_gravitational = collect(tau1_subs, g);
-collect_tau2_gravitational = collect(tau2_subs, g);
-
-
-
-
-    % % Store results in the results matrix (concatenate col of 100)
-    % LPB_results(n:n+N-1, :) = [t1q(:), t2q(:), t1qd(:), t2qd(:), t1qdd(:), t2qdd(:), t1qddd(:), t2qddd(:)];
-    % n = n+N;
-    % disp("LPB Joint")
-
-% TODO: Graph the position, velocity and acceleration, define g is pos 9.81
+    % Create a 2x1 subplot layout
+    plot(t, TauResultsNoGrav(:,1)./TauResults(:,1), '-b', 'LineWidth', 2,'DisplayName', 'Joint 1');
+    hold on;
+    plot(t, TauResultsNoGrav(:,2)./TauResults(:,2), '-r', 'LineWidth', 2,'DisplayName', 'Joint 2');
+    xlabel('Time (s)');
+    ylabel('Torque (Nm)');
+    title('Torque Comparison');
+    grid on;
+    legend('show', 'Location', 'best');
+% End of Torque Comparison
 
 %% OTHER
 

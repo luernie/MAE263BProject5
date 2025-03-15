@@ -1,13 +1,13 @@
-function [Tau, tauInertial, tauCent, tauCor, tauGrav] = calcJointTorque(l1, t1, dt1, ddt1, l2, t2, dt2, ddt2)
+function [Tau, tauInertial, tauCent, tauCor, tauGrav] = calcJointTorque(l1, t1, dt1, ddt1, l2, t2, dt2, ddt2, g)
     % Input link lengths and trajectory to loop through and calculate the torque
 
     % l1 is link length 1
     % l2 is link length 2
     % t1 is trajectory angles of link 1
     % t2 is trajectory angles of link 2
+    % g is the gravity term
 
     den_al = 2710; % kg/m^3
-    g = 9.81;
 
     % Calculate the Mass
     Router = 0.1/2; %m
